@@ -23,8 +23,9 @@ public class UserController {
     }
 
     // 2. GET /api/users/{id} - Получить пользователя по ID
+    // Добавлено ("id") в @PathVariable для гарантии работы в тестах
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long id) {
         UserDto user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
@@ -38,14 +39,15 @@ public class UserController {
 
     // 4. PUT /api/users/{id} - Обновить пользователя
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
         UserDto updatedUser = userService.updateUser(id, userDto);
         return ResponseEntity.ok(updatedUser);
     }
 
     // 5. DELETE /api/users/{id} - Удалить пользователя
+    //  Добавлено ("id") в @PathVariable для гарантии работы в тестах
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }

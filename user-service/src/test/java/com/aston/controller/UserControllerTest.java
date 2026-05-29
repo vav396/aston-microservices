@@ -21,30 +21,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// @WebMvcTest загружает только слой Web (контроллеры), игнорируя сервисы и БД
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
 
     @Autowired
-    private MockMvc mockMvc; // Имитация HTTP-клиента
+    private MockMvc mockMvc;
 
     @MockBean
-    private UserService userService; // Имитация сервиса
+    private UserService userService;
 
     @Autowired
-    private ObjectMapper objectMapper; // Для преобразования объектов в JSON и обратно
+    private ObjectMapper objectMapper;
 
     @Test
     public void testGetAllUsers() throws Exception {
-        // 1. Подготовка данных (Mocking)
         UserDto user1 = new UserDto(1L, "Alex", "alex@test.com", 25);
         UserDto user2 = new UserDto(2L, "Ivan", "ivan@test.com", 30);
         List<UserDto> users = Arrays.asList(user1, user2);
 
-        // Говорим Mockito: когда вызовут getAllUsers, верни наш список
         when(userService.getAllUsers()).thenReturn(users);
 
-        // 2. Выполнение запроса
         mockMvc.perform(get("/api/users"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -54,17 +50,14 @@ public class UserControllerTest {
 
     @Test
     public void testCreateUser() throws Exception {
-        // 1. Подготовка данных
         UserDto newUser = new UserDto(null, "NewUser", "new@test.com", 20);
         UserDto savedUser = new UserDto(1L, "NewUser", "new@test.com", 20);
 
-        // Говорим Mockito: когда вызовут createUser с любым UserDto, верни savedUser
         when(userService.createUser(any(UserDto.class))).thenReturn(savedUser);
 
-        // 2. Выполнение запроса
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newUser))) // Превращаем объект в JSON строку
+                        .content(objectMapper.writeValueAsString(newUser)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
@@ -73,11 +66,9 @@ public class UserControllerTest {
 
     @Test
     public void testGetUserById() throws Exception {
-        // 1. Подготовка
         UserDto user = new UserDto(1L, "Alex", "alex@test.com", 25);
         when(userService.getUserById(eq(1L))).thenReturn(user);
 
-        // 2. Запрос
         mockMvc.perform(get("/api/users/1"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -86,7 +77,8 @@ public class UserControllerTest {
 
     @Test
     public void testDeleteUser() throws Exception {
-        // Просто проверяем, что метод вызывается и возвращается 204
+        // В @WebMvcTest мы просто проверяем HTTP слой.
+        // Логика удаления и отправки в Kafka тестируется в UserServiceTest
         mockMvc.perform(delete("/api/users/1"))
                 .andDo(print())
                 .andExpect(status().isNoContent());
