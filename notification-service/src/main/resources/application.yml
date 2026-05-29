@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+  Kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: notification-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.aston.dto.event"
+
+  # Настройки почты пока пустые или фейковые, чтобы приложение стартовало
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+
+logging:
+  level:
+    root: INFO
+    com.aston: DEBUG
