@@ -19,7 +19,6 @@ public class NotificationConsumer {
     public void listen(UserEventDto event) {
         log.info("Получено событие из Kafka: {}", event);
 
-        // Используем Enum для проверки, это надежнее строк
         if (UserOperation.CREATE.equals(event.getOperation())) {
             emailService.sendCreateAccountEmail(event.getEmail());
         } else if (UserOperation.DELETE.equals(event.getOperation())) {

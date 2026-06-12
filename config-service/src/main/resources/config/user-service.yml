@@ -1,24 +1,12 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
-    name: notification-service
-  config:
-    import: optional:configserver:http://localhost:8888
-  cloud:
-    config:
-      enabled: true
-      fail-fast: false
-      name: notification-service
-      retry:
-        initial-interval: 2000
-        max-attempts: 15
-        max-interval: 5000
-        multiplier: 1.2
+    name: user-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/notificationdb
+    url: jdbc:postgresql://localhost:5433/userdb
     username: postgres
     password: postgres
   jpa:
@@ -61,3 +49,5 @@ logging:
   level:
     root: INFO
     com.aston: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN
