@@ -29,7 +29,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // 1. GET /api/users - Получить всех пользователей
     @GetMapping
     @Operation(summary = "Получить всех пользователей", description = "Возвращает список всех пользователей из базы данных с HATEOAS ссылками")
     @ApiResponses(value = {
@@ -48,8 +47,6 @@ public class UserController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    // 2. GET /api/users/{id} - Получить пользователя по ID
-    // Добавлено ("id") в @PathVariable для гарантии работы в тестах
     @GetMapping("/{id}")
     @Operation(summary = "Получить пользователя по ID", description = "Возвращает пользователя по его идентификатору с HATEOAS ссылками")
     @ApiResponses(value = {
@@ -66,7 +63,6 @@ public class UserController {
         return ResponseEntity.ok(resource);
     }
 
-    // 3. POST /api/users - Создать нового пользователя
     @PostMapping
     @Operation(summary = "Создать нового пользователя", description = "Создает нового пользователя и сохраняет в базу данных")
     @ApiResponses(value = {
@@ -83,7 +79,6 @@ public class UserController {
         return ResponseEntity.status(201).body(resource);
     }
 
-    // 4. PUT /api/users/{id} - Обновить пользователя
     @PutMapping("/{id}")
     @Operation(summary = "Обновить пользователя", description = "Обновляет данные существующего пользователя")
     @ApiResponses(value = {
@@ -101,7 +96,6 @@ public class UserController {
         return ResponseEntity.ok(resource);
     }
 
-    // 5. DELETE /api/users/{id} - Удалить пользователя
     @DeleteMapping("/{id}")
     @Operation(summary = "Удалить пользователя", description = "Удаляет пользователя из базы данных")
     @ApiResponses(value = {

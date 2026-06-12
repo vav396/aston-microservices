@@ -26,7 +26,7 @@ public class User {
 
     private int age;
 
-    @CreationTimestamp // Автоматически ставит текущее время при создании записи
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

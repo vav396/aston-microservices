@@ -63,6 +63,10 @@ replay_pid*
 
 .gigaide/
 
+# Local development configuration files (should not be committed)
+*application-docker.yml
+*application-local.yml
+
 # Maven
 
 pom.xml.tag

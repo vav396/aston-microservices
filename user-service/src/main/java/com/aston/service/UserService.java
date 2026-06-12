@@ -6,7 +6,9 @@ import com.aston.dto.event.UserOperation;
 import com.aston.entity.User;
 import com.aston.exception.UserNotFoundException;
 import com.aston.repository.UserRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
     private final KafkaTemplate<String, UserEventDto> kafkaTemplate;
 
-    // --- Методы для работы с DTO ---
-
-    // 1. Получить всех пользователей
     public List<UserDto> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
@@ -31,15 +31,14 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    // 2. Получить пользователя по ID
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         return convertToDto(user);
     }
 
-    // 3. Создать нового пользователя
     @Transactional
+    @CircuitBreaker(name = "userService", fallbackMethod = "createUserFallback")
     public UserDto createUser(UserDto userDto) {
         User user = convertToEntity(userDto);
         User savedUser = userRepository.save(user);
@@ -51,8 +50,18 @@ public class UserService {
         return convertToDto(savedUser);
     }
 
-    // 4. Обновить пользователя
+    public UserDto createUserFallback(UserDto userDto, Throwable throwable) {
+        log.error("Ошибка при создании пользователя: {}", throwable.getMessage());
+        UserDto fallbackDto = new UserDto();
+        fallbackDto.setName(userDto.getName());
+        fallbackDto.setEmail(userDto.getEmail());
+        fallbackDto.setAge(userDto.getAge());
+        fallbackDto.setId(-1L);
+        return fallbackDto;
+    }
+
     @Transactional
+    @CircuitBreaker(name = "userService", fallbackMethod = "updateUserFallback")
     public UserDto updateUser(Long id, UserDto userDto) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -66,8 +75,18 @@ public class UserService {
         return convertToDto(updatedUser);
     }
 
-    // 5. Удалить пользователя
+    public UserDto updateUserFallback(Long id, UserDto userDto, Throwable throwable) {
+        log.error("Ошибка при обновлении пользователя {}: {}", id, throwable.getMessage());
+        UserDto fallbackDto = new UserDto();
+        fallbackDto.setId(id);
+        fallbackDto.setName(userDto.getName());
+        fallbackDto.setEmail(userDto.getEmail());
+        fallbackDto.setAge(userDto.getAge());
+        return fallbackDto;
+    }
+
     @Transactional
+    @CircuitBreaker(name = "userService", fallbackMethod = "deleteUserFallback")
     public void deleteUser(Long id) {
         // Сначала находим пользователя, чтобы получить его email перед удалением
         User user = userRepository.findById(id)
@@ -83,7 +102,9 @@ public class UserService {
         kafkaTemplate.send("user-events", event);
     }
 
-    // --- Вспомогательные методы конвертации  ---
+    public void deleteUserFallback(Long id, Throwable throwable) {
+        log.error("Ошибка при удалении пользователя {}: {}", id, throwable.getMessage());
+    }
 
     private UserDto convertToDto(User user) {
         UserDto dto = new UserDto();

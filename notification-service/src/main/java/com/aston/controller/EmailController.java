@@ -13,7 +13,6 @@ public class EmailController {
 
     private final EmailService emailService;
 
-    // DTO для входящего запроса
     @Data
     public static class SendEmailRequest {
         private String email;
