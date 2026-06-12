@@ -6,7 +6,7 @@ spring:
     name: user-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://aston-postgres:5432/userdb
+    url: jdbc:postgresql://localhost:5433/userdb
     username: postgres
     password: postgres
   jpa:
@@ -16,11 +16,19 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9093
+  discovery:
+    client:
+      enabled: true
+  circuitbreaker:
+    resilience4j:
+      enabled: true
 
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:

@@ -1,19 +1,33 @@
-
 services:
+  # Config Server
+  config-server:
+    build: ./config-service
+    container_name: aston-config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - aston-network
+
   # PostgreSQL для user-service
   postgres:
     image: postgres:15
     container_name: aston-postgres
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: userdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"  # Пробрасываем порт 5433 на хосте -> 5432 внутри контейнера
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - aston-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # Zookeeper (нужен для Kafka)
   zookeeper:
@@ -37,10 +51,64 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - aston-network
+
+  # Eureka Server
+  eureka-server:
+    build: ./eureka-service
+    container_name: aston-eureka-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      config-server:
+        condition: service_started
+    networks:
+      - aston-network
+
+  # Gateway Service
+  gateway-service:
+    build: ./gateway-service
+    container_name: aston-gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_started
+    networks:
+      - aston-network
+
+  # User Service
+  user-service:
+    build: ./user-service
+    container_name: aston-user-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      eureka-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - aston-network
+
+  # Notification Service
+  notification-service:
+    build: ./notification-service
+    container_name: aston-notification-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      eureka-server:
+        condition: service_started
     networks:
       - aston-network
 

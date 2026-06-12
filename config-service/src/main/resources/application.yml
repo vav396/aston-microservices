@@ -9,12 +9,19 @@ spring:
       server:
         native:
           search-locations: classpath:/config
-        # Git-based config (для продакшена)
-        # git:
-        #   uri: file:///path/to/config-repo
-        #   search-paths: '{application}'
+  profiles:
+    active: native
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
-    com.aston: DEBUG
-    org.springframework.cloud: INFO
+    root: INFO
+    org.springframework: WARN
