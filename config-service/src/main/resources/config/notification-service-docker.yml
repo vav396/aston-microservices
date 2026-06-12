@@ -1,0 +1,58 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/notificationdb
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+  discovery:
+    client:
+      enabled: true
+  circuitbreaker:
+    resilience4j:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: notification-service
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.aston: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN

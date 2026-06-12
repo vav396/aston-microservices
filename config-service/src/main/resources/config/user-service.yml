@@ -1,0 +1,45 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://aston-postgres:5432/userdb
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.aston: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN

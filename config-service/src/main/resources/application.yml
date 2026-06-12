@@ -1,0 +1,20 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+        # Git-based config (для продакшена)
+        # git:
+        #   uri: file:///path/to/config-repo
+        #   search-paths: '{application}'
+
+logging:
+  level:
+    com.aston: DEBUG
+    org.springframework.cloud: INFO
